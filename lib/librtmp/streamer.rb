@@ -22,13 +22,27 @@ module Librtmp
 
       FFI::RTMP_EnableWrite(@session_ptr) if writable?
 
-      unless FFI::RTMP_Connect(@session_ptr, nil)
+      if FFI::RTMP_Connect(@session_ptr, nil) <= 0
         raise 'Unable to connect to RTMP server'
       end
 
-      unless FFI::RTMP_ConnectStream(@session_ptr, 0)
+      if FFI::RTMP_ConnectStream(@session_ptr, 0) <= 0
         raise 'Unable to connect to RTMP stream'
       end
+    end
+
+    def read(bufferSize)
+      if @buffer.nil? || @bufferSize != bufferSize
+        @buffer = ::FFI::Buffer.new(bufferSize)
+        @bufferSize = bufferSize
+      end
+
+      bytesRead = Librtmp::FFI::RTMP_Read(streamer.session, @buffer, @bufferSize)
+      if bytesRead < 0
+        raise 'Failed to read data'
+      end
+
+      return @buffer, bytesRead
     end
 
     def send(data)
@@ -51,7 +65,7 @@ module Librtmp
       @session_ptr = FFI::RTMP_Alloc()
       FFI::RTMP_Init(@session_ptr)
 
-      unless FFI::RTMP_SetupURL(@session_ptr, self.url)
+      if FFI::RTMP_SetupURL(@session_ptr, self.url) <= 0
         FFI::RTMP_Free(@session_ptr)
         raise 'Unable to setup RTMP session'
       end
