@@ -37,7 +37,7 @@ module Librtmp
         @bufferSize = bufferSize
       end
 
-      bytesRead = Librtmp::FFI::RTMP_Read(streamer.session, @buffer, @bufferSize)
+      bytesRead = Librtmp::FFI::RTMP_Read(@session_ptr, @buffer, @bufferSize)
       if bytesRead < 0
         raise 'Failed to read data'
       end
