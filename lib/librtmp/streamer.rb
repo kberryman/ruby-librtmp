@@ -32,13 +32,13 @@ module Librtmp
     end
 
     def read(bufferSize)
-      if( FFI::RTMP_IsConnected(@session) > 0 )
+      if( FFI::RTMP_IsConnected(@session_ptr) > 0 )
         if @buffer.nil? || @bufferSize != bufferSize
           @buffer = ::FFI::Buffer.new(bufferSize)
           @bufferSize = bufferSize
         end
 
-        bytesRead = FFI::RTMP_Read(@session, @buffer, @bufferSize)
+        bytesRead = FFI::RTMP_Read(@session_ptr, @buffer, @bufferSize)
         if bytesRead < 0
           raise IOError.new('Failed to read data')
         end
